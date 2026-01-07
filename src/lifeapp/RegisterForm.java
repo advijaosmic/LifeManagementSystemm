@@ -16,6 +16,7 @@ public class RegisterForm {
     private JPasswordField passwordField;
     private JButton registerButton;
     private JButton backButton;
+    private JComboBox<String> themeCombo;
 
     public RegisterForm() {
         registerButton.addActionListener(e -> registerUser());
@@ -33,8 +34,9 @@ public class RegisterForm {
 
         String username = usernameField.getText().trim();
         String password = new String(passwordField.getPassword());
+        String theme = (String) themeCombo.getSelectedItem();
 
-        if (username.isEmpty() || password.isEmpty()) {
+        if (username.isEmpty() || password.isEmpty() || theme == null) {
             JOptionPane.showMessageDialog(null, "Molimo popunite sva polja.");
             return;
         }
@@ -49,7 +51,8 @@ public class RegisterForm {
         }
 
         Document newUser = new Document("username", username)
-                .append("password", password);
+                .append("password", password)
+                .append("theme", theme);
 
         users.insertOne(newUser);
 

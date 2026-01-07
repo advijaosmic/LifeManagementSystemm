@@ -3,14 +3,18 @@ package lifeapp;
 import javax.swing.*;
 
 public class Main {
-    public static void main(String[] args) {
 
-        JFrame frame = new JFrame("Life Management System - Login");
-        frame.setContentPane(new LoginForm().getMainPanel());
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(420, 350);
-        frame.setLocationRelativeTo(null);
-        frame.setResizable(false);
-        frame.setVisible(true);
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+
+            ThemeManager.applyDefaultTheme();
+
+            JFrame frame = new JFrame("Life Management System");
+            frame.setContentPane(new LoginForm().getMainPanel());
+            frame.setSize(800, 500);
+            frame.setLocationRelativeTo(null);
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setVisible(true);
+        });
     }
 }
