@@ -39,9 +39,6 @@ public class MyTrackersForm {
             frame.repaint();
         });
 
-        studyButton.addActionListener(e ->
-                JOptionPane.showMessageDialog(null, "Study Tracker")
-        );
 
         backButton.addActionListener(e -> {
             Session.currentUsername = null;
@@ -51,6 +48,14 @@ public class MyTrackersForm {
             frame.revalidate();
             frame.repaint();
         });
+
+        studyButton.addActionListener(e -> {
+            JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(mainPanel);
+            frame.setContentPane(new StudyTrackerForm().getMainPanel());
+            frame.revalidate();
+            frame.repaint();
+        });
+
     }
 
     public JPanel getMainPanel() {

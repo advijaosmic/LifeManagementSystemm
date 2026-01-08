@@ -64,17 +64,13 @@ public class LoginForm {
             return;
         }
 
+        String theme = user.getString("theme");
+        if (theme == null) theme = "DEFAULT";
+
+        ThemeManager.applyTheme(theme);
         Session.currentUsername = username;
 
         JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(mainPanel);
-        String theme = user.getString("theme");
-
-        if ("Dark".equals(theme)) {
-            ThemeManager.applyDarkTheme();
-        } else {
-            ThemeManager.applyLightTheme();
-        }
-
         frame.setContentPane(new MyTrackersForm().getMainPanel());
         frame.setTitle("Life Management System - My Trackers");
         frame.revalidate();

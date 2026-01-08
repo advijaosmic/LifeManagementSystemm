@@ -8,6 +8,7 @@ import org.bson.Document;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
+import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
 
 public class SleepTrackerForm {
@@ -15,8 +16,10 @@ public class SleepTrackerForm {
     private JPanel mainPanel;
     private JTextField hoursField;
     private JButton addSleepButton;
+    private JButton deleteSleepButton;
     private JTable sleepTable;
     private JLabel averageLabel;
+    private JLabel statsLabel;
     private JButton backButton;
 
     private MongoCollection<Document> collection;
@@ -28,44 +31,76 @@ public class SleepTrackerForm {
             collection = db.getCollection("sleep_entries");
         } catch (Exception e) {
             collection = null;
-            JOptionPane.showMessageDialog(null, "Konekcija sa bazom neuspjesna");
+            JOptionPane.showMessageDialog(null, "Konekcija sa bazom neuspjela");
         }
 
-        addSleepButton.addActionListener(e -> {
-            if (collection == null) return;
-
-            try {
-                double hours = Double.parseDouble(hoursField.getText());
-
-                if (hours <= 0 || hours > 24) {
-                    JOptionPane.showMessageDialog(null, "Sati moraju biti u rasponu 1–24");
-                    return;
-                }
-
-                Document doc = new Document("username", Session.currentUsername)
-                        .append("hours", hours);
-
-                collection.insertOne(doc);
-                hoursField.setText("");
-
-                loadSleepData();
-                updateAverage();
-
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(null, "Unesite broj!");
-            }
-        });
+        addSleepButton.addActionListener(e -> addSleep());
+        deleteSleepButton.addActionListener(e -> deleteSleep());
 
         backButton.addActionListener(e -> {
             JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(mainPanel);
             frame.setContentPane(new MyTrackersForm().getMainPanel());
-            frame.setTitle("Life Management System - My Trackers");
             frame.revalidate();
             frame.repaint();
         });
 
         loadSleepData();
-        updateAverage();
+        updateStats();
+    }
+
+    private void addSleep() {
+        if (collection == null) return;
+
+        try {
+            double hours = Double.parseDouble(hoursField.getText());
+
+            if (hours <= 0 || hours > 24) {
+                JOptionPane.showMessageDialog(null, "Sati moraju biti u rasponu 1–24");
+                return;
+            }
+
+            Document doc = new Document("username", Session.currentUsername)
+                    .append("hours", hours);
+
+            collection.insertOne(doc);
+            hoursField.setText("");
+
+            loadSleepData();
+            updateStats();
+
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(null, "Unesite broj!");
+        }
+    }
+
+    private void deleteSleep() {
+        int selectedRow = sleepTable.getSelectedRow();
+
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(null, "Odaberite unos iz tabele.");
+            return;
+        }
+
+        Double hours = (Double) sleepTable.getValueAt(selectedRow, 0);
+
+        int confirm = JOptionPane.showConfirmDialog(
+                null,
+                "Da li ste sigurni da želite obrisati ovaj unos?",
+                "Potvrda",
+                JOptionPane.YES_NO_OPTION
+        );
+
+        if (confirm != JOptionPane.YES_OPTION) return;
+
+        collection.deleteOne(
+                and(
+                        eq("username", Session.currentUsername),
+                        eq("hours", hours)
+                )
+        );
+
+        loadSleepData();
+        updateStats();
     }
 
     private void loadSleepData() {
@@ -81,26 +116,36 @@ public class SleepTrackerForm {
         sleepTable.setModel(model);
     }
 
-    private void updateAverage() {
+    private void updateStats() {
         if (collection == null) return;
 
         double sum = 0;
+        double min = Double.MAX_VALUE;
+        double max = 0;
         int count = 0;
 
         for (Document d : collection.find(eq("username", Session.currentUsername))) {
             Double h = d.getDouble("hours");
-            if (h != null) {
-                sum += h;
-                count++;
-            }
+            if (h == null) continue;
+
+            sum += h;
+            count++;
+            min = Math.min(min, h);
+            max = Math.max(max, h);
         }
 
         if (count == 0) {
-            averageLabel.setText("Prosječan broj sati spavanja: 0 h");
+            averageLabel.setText("Prosječan broj sati: 0");
+            statsLabel.setText("Nemate unesenih podataka.");
         } else {
             averageLabel.setText(
-                    "Prosječan broj sati spavanja: " +
-                            String.format("%.2f", sum / count) + " h"
+                    "Prosječan broj sati: " + String.format("%.2f", sum / count)
+            );
+
+            statsLabel.setText(
+                    "Unosa: " + count +
+                            " | Najkraće: " + min + " h" +
+                            " | Najduže: " + max + " h"
             );
         }
     }
