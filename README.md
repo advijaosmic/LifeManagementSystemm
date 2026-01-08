@@ -1,4 +1,4 @@
-Life Management System - opis projekta
+
 Life Management System je desktop aplikacija razvijena u programskom jeziku Java, čiji je cilj da korisnicima omogući praćenje i organizaciju različitih aspekata svakodnevnog života na jednom mjestu. 
 Aplikacija podržava višekorisnički rad, pri čemu svaki korisnik nakon prijave ima pristup isključivo vlastitim podacima.
 Sistem je zamišljen modularno, tako da se sastoji od više nezavisnih funkcionalnih cjelina (trackera), koje su međusobno povezane kroz zajednički meni i korisničku sesiju.
